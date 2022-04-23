@@ -26,6 +26,31 @@ class NeuralNetwork(nn.Module):
         logits = self.linear_relu_stack(x)
         return logits
 
+class ConvNet(nn.Module):
+    def __init__(self):
+        super(ConvNet,self).__init__()
+        self.layer1 = nn.Sequential(
+            nn.Conv2d(in_channels=1, out_channels=32, kernel_size=5, stride=1, padding=2),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2, stride=2)
+        )
+        self.layer2 = nn.Sequential(
+            nn.Conv2d(in_channels=32, out_channels=64, kernel_size=5, stride=1, padding=2),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2, stride=2)
+        )
+        self.dropout = nn.Dropout()
+        self.fc1 = nn.Linear(in_features=7*7*64, out_features=1000)
+        self.fc2 = nn.Linear(in_features=1000, out_features=10)
+
+    def forward(self,x):
+        x1 = self.layer1(x)
+        x2 = self.layer2(x1)
+        x3 = x2.reshape(x2.size(0),-1)
+        x4 = self.dropout(x3)
+        x5 = self.fc1(x4)
+        x6 = self.fc2(x5)
+        return x6
 
 
 class PytorchTest:
@@ -141,10 +166,15 @@ if __name__ == '__main__':
         download=True,
         transform=ToTensor(),
     )
-    module = NeuralNetwork()
-    pt = PytorchTest(mnist_train,mnist_test,64, module, nn.CrossEntropyLoss(),  SGD)
-    if pathlib.Path('./model.pth').exists():
-        pt.load()
+    # module = NeuralNetwork()
+    # pt = PytorchTest(mnist_train,mnist_test,64, module, nn.CrossEntropyLoss(),  SGD)
+    # if pathlib.Path('./model.pth').exists():
+    #     pt.load()
+
+    module = ConvNet()
+    pt = PytorchTest(mnist_train,mnist_test,64, module, nn.CrossEntropyLoss(), torch.optim.Adam)
+
+
     pt.run(5)
-    pt.save()
+    #pt.save()
     pt.predict()
