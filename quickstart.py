@@ -30,9 +30,19 @@ class ConvNet(nn.Module):
     def __init__(self):
         super(ConvNet,self).__init__()
         self.layer1 = nn.Sequential(
+            # x input height = 28
+            # x inpurt width = 28
+            # output_height = (Height + 2*padding - FilterWidth)/Stride +1
+            # = (28 + 2*2 -5)/1 + 1 = 28
+            # output_width = (Width + 2*padding - FilterHeight)/Stride + 1
+            # =
             nn.Conv2d(in_channels=1, out_channels=32, kernel_size=5, stride=1, padding=2),
             nn.ReLU(),
+            # output_height =(Height + 2*padding - dilation[0] * (kernel_size[0]-1) -1) / stride[0] +1
+            # output_width = (Width + 2*padding - dilation[1] * (kernel_size[1]-1) -1) / stride[1] +1
+            # x width = (28 + 2*0 -1 * (2-1)-1) / 2 +1 = 14
             nn.MaxPool2d(kernel_size=2, stride=2)
+
         )
         self.layer2 = nn.Sequential(
             nn.Conv2d(in_channels=32, out_channels=64, kernel_size=5, stride=1, padding=2),
@@ -44,6 +54,7 @@ class ConvNet(nn.Module):
         self.fc2 = nn.Linear(in_features=1000, out_features=10)
 
     def forward(self,x):
+        # x = 1x28x28 input
         x1 = self.layer1(x)
         x2 = self.layer2(x1)
         x3 = x2.reshape(x2.size(0),-1)
@@ -91,14 +102,16 @@ class PytorchTest:
 
             # Compute prediction error
             pred = self.model(X)
-            loss = self.loss_fn(pred, y)
+            loss = self.loss_fn(pred, y) #shape 확인. pred, y
+            #loss의 shape확인,
 
             # Backpropagation
-            self.optimizer.zero_grad()
+            self.optimizer.zero_grad() #다음시간에.
             loss.backward()
-            self.optimizer.step()
+            self.optimizer.step() #다음시간에.
 
             if batch % 100 == 0:
+                #loss가 1차원 값으로 어떻게 계산되는지 확인.
                 loss, current = loss.item(), batch * len(X)
                 print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
 
