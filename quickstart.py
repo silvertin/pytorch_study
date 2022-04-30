@@ -42,8 +42,8 @@ class ConvNet(nn.Module):
             # output_width = (Width + 2*padding - dilation[1] * (kernel_size[1]-1) -1) / stride[1] +1
             # x width = (28 + 2*0 -1 * (2-1)-1) / 2 +1 = 14
             nn.MaxPool2d(kernel_size=2, stride=2)
-
         )
+
         self.layer2 = nn.Sequential(
             nn.Conv2d(in_channels=32, out_channels=64, kernel_size=5, stride=1, padding=2),
             nn.ReLU(),
@@ -98,6 +98,8 @@ class PytorchTest:
         size = len(self.train_dataloader.dataset)
         self.model.train()
         for batch, (X, y) in enumerate(self.train_dataloader):
+            # batch: 64
+            # X: 64, 28, 28
             X, y = X.to(self.device), y.to(self.device)
 
             # Compute prediction error
@@ -142,7 +144,7 @@ class PytorchTest:
         print("Saved PyTorch Model State to model.pth")
 
     def load(self):
-        self.model = NeuralNetwork()
+        # self.model = NeuralNetwork()
         self.model.load_state_dict(torch.load("model.pth"))
 
     def predict(self):
@@ -161,6 +163,10 @@ class PytorchTest:
 
         self.model.eval()
         x, y = self.test_data[0][0], self.test_data[0][1]
+        x = x.to(self.device)
+        # print(f"x: {x.shape}")
+        x = x.unsqueeze(0)
+        # print(f"reshape x: {x.shape}")
         with torch.no_grad():
             pred = self.model(x)
             predicted, actual = classes[pred[0].argmax(0)], classes[y]
